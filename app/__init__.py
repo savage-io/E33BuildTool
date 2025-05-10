@@ -19,6 +19,11 @@ def create_app(config_class=Config):
     from app.routes import bp as main_api_bp
     app.register_blueprint(main_api_bp)  # The URL prefix is defined in the blueprint
 
+    from app.seed import seed_maelle_character_command
+
+    # Register your CLI commands
+    app.cli.add_command(seed_maelle_character_command)
+
     @app.route('/hello')
     def hello():
         return "Hello, Expedition 33 Tool!"

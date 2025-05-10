@@ -33,7 +33,6 @@ def get_all_characters():
     character_list = []
     for char in characters:
         character_list.append({
-            'id': char.id,
             'name': char.name,
             'description': char.description,
             'base_stats_json': char.base_stats_json,
@@ -42,11 +41,10 @@ def get_all_characters():
         })
     return jsonify(character_list), 200
 
-@bp.route('/characters/<int:character_id>', methods=['GET'])
-def get_character(character_id):
-    character = GameCharacterCOE33.query.get_or_404(character_id)
+@bp.route('/characters/<string:character_name>', methods=['GET'])
+def get_character(character_name):
+    character = GameCharacterCOE33.query.filter_by(name=character_name).first_or_404()
     return jsonify({
-        'id': character.id,
         'name': character.name,
         'description': character.description,
         'base_stats_json': character.base_stats_json,

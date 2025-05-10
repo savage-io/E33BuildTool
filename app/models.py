@@ -36,9 +36,8 @@ class User(db.Model):
 
 
 class GameCharacterCOE33(db.Model):
-    __tablename__ = 'game_characters_coe33'
-    id = db.Column(db.Integer, primary_key=True, index=True)
-    name = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    __tablename__ = 'game_characters_coe33'  # Corrected table name
+    name = db.Column(db.String(100), primary_key=True, unique=True, nullable=False, index=True)
     description = db.Column(db.Text, nullable=True)
     base_stats_json = db.Column(db.JSON, nullable=True)
     unique_mechanic_description = db.Column(db.Text, nullable=True)
@@ -89,7 +88,7 @@ class UserBuildCOE33(db.Model):
     __tablename__ = 'user_builds_coe33'
     id = db.Column(db.Integer, primary_key=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    character_id = db.Column(db.Integer, db.ForeignKey('game_characters_coe33.id'), nullable=False)
+    character_id = db.Column(db.String(100), db.ForeignKey('game_characters_coe33.name'), nullable=False)
     build_title = db.Column(db.String(200), nullable=False)
     build_description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
@@ -116,3 +115,27 @@ class Comment(db.Model):
 
     user = db.relationship("User", back_populates="comments")
     build = db.relationship("UserBuildCOE33", backref="comments")
+
+
+class Item(db.Model):
+    __tablename__ = 'items'
+    id = db.Column(db.Integer, primary_key=True, index=True)
+    name = db.Column(db.String(150), unique=True, nullable=False, index=True)
+    item_type = db.Column(db.String(50), nullable=False)  # e.g., "Weapon_Rapier"
+    element = db.Column(db.String(50), nullable=True)  # e.g., "Physical", "Fire"
+
+    # Power at each level from 1 to 33
+    power_by_level_json = db.Column(db.JSON, nullable=True)
+
+    # Attribute scaling changes at specific levels
+    attribute_scaling_tiers_json = db.Column(db.JSON, nullable=True)
+
+    # Passive effects unlocked at different levels
+    passive_effects_by_level_json = db.Column(db.JSON, nullable=True)
+
+    # Acquisition and other metadata
+    acquisition_info = db.Column(db.Text, nullable=True)
+    icon_url = db.Column(db.String(255), nullable=True)
+
+    # Optional: Primary character association
+    primary_character_name = db.Column(db.String(100), nullable=True, index=True)
