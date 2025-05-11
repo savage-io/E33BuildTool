@@ -1,3 +1,6 @@
+from app.game_data_definitions.maelle_skills import MAELLE_SKILL_DEFINITIONS
+from app.game_data_definitions.maelle_weapons import MAELLE_WEAPON_DEFINITIONS
+
 # Maelle's character data
 MAELLE_CHARACTER_DATA = {
     "name": "Maelle",
@@ -27,7 +30,9 @@ MAELLE_CHARACTER_DATA = {
         "stances grants Maelle 1 Action Point (AP), rewarding players for fluidly transitioning between "
         "them. Skills are the primary method for changing stances... Basic attacks also interact with stances..."
     ),
-    "icon_url": "/static/images/characters/maelle_portrait.png"
+    "icon_url": "/static/images/characters/maelle_portrait.png",
+    "skills": MAELLE_SKILL_DEFINITIONS,
+    "weapons": MAELLE_WEAPON_DEFINITIONS
 }
 
 CHARACTER_DEFINITIONS = [

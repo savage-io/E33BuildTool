@@ -1,8 +1,10 @@
 import sys
+import os
 import csv
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog
+    QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog, QComboBox
 )
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from app.game_data_definitions.characters import CHARACTER_DEFINITIONS
 from app.game_data_definitions.maelle_weapons import MAELLE_WEAPON_DEFINITIONS
 
@@ -23,31 +25,63 @@ class DataManagementTool(QMainWindow):
     def add_character_tabs(self):
         for character in CHARACTER_DEFINITIONS:
             character_tab = QWidget()
-            layout = QVBoxLayout()
+            character_layout = QVBoxLayout()
 
-            layout.addWidget(QLabel(f"{character['name']} Data Management"))
+            character_layout.addWidget(QLabel(f"{character['name']} Data Management"))
 
-            # Add existing weapons list if character is Maelle
+            # Create sub-tabs for weapons and skills
+            sub_tabs = QTabWidget()
+
+            # Weapons tab
+            weapons_tab = QWidget()
+            weapons_layout = QVBoxLayout()
+
             if character['name'] == "Maelle":
-                layout.addWidget(QLabel("Existing Weapons:"))
+                weapons_layout.addWidget(QLabel("Existing Weapons:"))
                 for weapon in MAELLE_WEAPON_DEFINITIONS:
-                    layout.addWidget(QLabel(f"- {weapon['name']}: {weapon['power']} Power"))
+                    weapon_dropdown = QComboBox()
+                    weapon_dropdown.addItem(f"{weapon['name']}")
+                    if 'power_by_level' in weapon:
+                        max_power = max(weapon['power_by_level'].values())
+                        weapon_dropdown.addItem(f"Max Power: {max_power}")
+                    else:
+                        weapon_dropdown.addItem("Power data not available")
 
-                # Add download CSV button
-                download_button = QPushButton("Download Weapons CSV Template")
-                download_button.clicked.connect(self.download_csv_template)
-                layout.addWidget(download_button)
+                    # Add additional attributes
+                    if 'element' in weapon:
+                        weapon_dropdown.addItem(f"Element: {weapon['element']}")
 
-            # Add upload buttons for weapons and skills
-            upload_weapons_button = QPushButton(f"Upload {character['name']} Weapons Data")
-            upload_weapons_button.clicked.connect(lambda: self.upload_file(character['name'], "weapons"))
-            layout.addWidget(upload_weapons_button)
+                    if 'power_by_level' in weapon:
+                        weapon_dropdown.addItem("Power by Level:")
+                        for level, power in weapon['power_by_level'].items():
+                            weapon_dropdown.addItem(f"  Level {level}: {power}")
 
-            upload_skills_button = QPushButton(f"Upload {character['name']} Skills Data")
-            upload_skills_button.clicked.connect(lambda: self.upload_file(character['name'], "skills"))
-            layout.addWidget(upload_skills_button)
+                    if 'attribute_scaling' in weapon:
+                        weapon_dropdown.addItem("Attribute Scaling:")
+                        for attr, scaling in weapon['attribute_scaling'].items():
+                            weapon_dropdown.addItem(f"  {attr}: {scaling}")
 
-            character_tab.setLayout(layout)
+                    weapons_layout.addWidget(weapon_dropdown)
+
+            weapons_tab.setLayout(weapons_layout)
+            sub_tabs.addTab(weapons_tab, "Weapons")
+
+            # Skills tab
+            skills_tab = QWidget()
+            skills_layout = QVBoxLayout()
+
+            skills_layout.addWidget(QLabel("Existing Skills:"))
+            for skill in character.get('skills', []):
+                skill_dropdown = QComboBox()
+                skill_dropdown.addItem(f"{skill['name']}")
+                skill_dropdown.addItem(f"Description: {skill['description']}")
+                skills_layout.addWidget(skill_dropdown)
+
+            skills_tab.setLayout(skills_layout)
+            sub_tabs.addTab(skills_tab, "Skills")
+
+            character_layout.addWidget(sub_tabs)
+            character_tab.setLayout(character_layout)
             self.tabs.addTab(character_tab, character['name'])
 
     def add_picto_tab(self):
@@ -56,30 +90,13 @@ class DataManagementTool(QMainWindow):
 
         layout.addWidget(QLabel("Pictos Data Management"))
 
-        # Add upload button
-        upload_button = QPushButton("Upload Pictos Data")
-        upload_button.clicked.connect(self.upload_file)
-        layout.addWidget(upload_button)
+        # Placeholder dropdown for pictos data
+        picto_dropdown = QComboBox()
+        picto_dropdown.addItem("No pictos data available.")
+        layout.addWidget(picto_dropdown)
 
         picto_tab.setLayout(layout)
         self.tabs.addTab(picto_tab, "Pictos")
-
-    def upload_file(self, character_name=None, data_type=None):
-        options = QFileDialog.Options()
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "CSV Files (*.csv);;Excel Files (*.xlsx)", options=options)
-        if file_path:
-            print(f"File selected for {character_name} ({data_type}): {file_path}")
-
-    def download_csv_template(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "Save CSV Template", "weapons_template.csv", "CSV Files (*.csv)")
-        if file_path:
-            with open(file_path, mode='w', newline='') as file:
-                writer = csv.writer(file)
-                # Write headers for the CSV template
-                writer.writerow(["name", "element", "power", "attributes", "passive_effects", "acquisition", "stance_synergy", "element_interactions", "power_scaling", "attribute_scaling", "max_level"])
-                # Example row
-                writer.writerow(["Example Weapon", "Physical", 1000, "{\"Vitality\": \"C\"}", "{\"lvl_4\": \"N/A\"}", "Starting Weapon", "[]", "{}", "{\"base\": 1000, \"max\": 3228}", "{\"Vitality\": {\"base\": \"C\", \"max\": \"S\"}}", 33])
-            print(f"CSV template saved to {file_path}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

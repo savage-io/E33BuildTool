@@ -54,6 +54,9 @@ class SkillCOE33(db.Model):
     ap_cost = db.Column(db.Integer, nullable=True)
     effects_json = db.Column(db.JSON, nullable=True)
     icon_url = db.Column(db.String(255), nullable=True)
+    character_name = db.Column(db.String(100), nullable=True, index=True)
+    mechanics_json = db.Column(db.JSON, nullable=True)
+    is_gradient_attack = db.Column(db.Boolean, default=False, nullable=False)
 
     builds = db.relationship("UserBuildCOE33", secondary=build_skills_association, back_populates="selected_skills")
 
@@ -118,11 +121,11 @@ class Comment(db.Model):
 
 
 class Item(db.Model):
-    __tablename__ = 'items'
+    __tablename__ = 'items' # This should be one of the first lines after class declaration
     id = db.Column(db.Integer, primary_key=True, index=True)
     name = db.Column(db.String(150), unique=True, nullable=False, index=True)
-    item_type = db.Column(db.String(50), nullable=False)  # e.g., "Weapon_Rapier"
-    element = db.Column(db.String(50), nullable=True)  # e.g., "Physical", "Fire"
+    item_type = db.Column(db.String(50), nullable=False)
+    element = db.Column(db.String(50), nullable=True)
 
     # Power at each level from 1 to 33
     power_by_level_json = db.Column(db.JSON, nullable=True)
@@ -136,6 +139,10 @@ class Item(db.Model):
     # Acquisition and other metadata
     acquisition_info = db.Column(db.Text, nullable=True)
     icon_url = db.Column(db.String(255), nullable=True)
-
-    # Optional: Primary character association
     primary_character_name = db.Column(db.String(100), nullable=True, index=True)
+    
+    # Add relationships if items are directly part of builds (e.g., equipped weapons)
+    # If items are directly equipped in builds, you'd need an association table or a ForeignKey in UserBuildCOE33
+    # For now, your UserBuildCOE33 uses Pictos, which might encompass equippable items/weapons.
+    # If 'Item' is specifically for weapons that ARE pictos, the structure is fine.
+    # If 'Item' is for generic gear AND pictos are separate, you might need another relationship for UserBuildCOE33 <-> Item
