@@ -20,11 +20,11 @@ def create_app(config_class=Config):
     app.register_blueprint(main_api_bp)  # The URL prefix is defined in the blueprint
 
     from app.seed import seed_maelle_character_command
-    from app.seed import seed_maelle_weapons_command
+    from app.seed import seed_weapons_command
 
     # Register your CLI commands
     app.cli.add_command(seed_maelle_character_command)
-    app.cli.add_command(seed_maelle_weapons_command)
+    app.cli.add_command(seed_weapons_command)
 
     @app.route('/hello')
     def hello():

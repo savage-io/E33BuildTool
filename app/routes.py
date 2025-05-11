@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response, json
 from . import db
 from .models import GameCharacterCOE33, SkillCOE33, PictoCOE33, LuminaCOE33  # Ensure SkillCOE33 is imported
 
@@ -282,3 +282,27 @@ def delete_lumina(lumina_id):
     db.session.delete(lumina)
     db.session.commit()
     return jsonify({'message': f'Lumina {lumina.name} deleted successfully'}), 200
+
+@bp.route('/weapons', methods=['GET'])
+def get_weapons():
+    """Fetch all weapons data."""
+    from .models import Item
+
+    weapons = Item.query.all()
+    weapons_data = [
+        {
+            "id": weapon.id,
+            "name": weapon.name,
+            "item_type": weapon.item_type,
+            "element": weapon.element,
+            "power_by_level_json": weapon.power_by_level_json,
+            "attribute_scaling_tiers_json": weapon.attribute_scaling_tiers_json,
+            "passive_effects_by_level_json": weapon.passive_effects_by_level_json,
+            "acquisition_info": weapon.acquisition_info,
+            "icon_url": weapon.icon_url,
+            "primary_character_name": weapon.primary_character_name,
+            "metadata_json": weapon.metadata_json,
+        }
+        for weapon in weapons
+    ]
+    return Response(json.dumps(weapons_data, sort_keys=False), mimetype='application/json')

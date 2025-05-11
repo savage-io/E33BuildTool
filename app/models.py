@@ -140,6 +140,7 @@ class Item(db.Model):
     acquisition_info = db.Column(db.Text, nullable=True)
     icon_url = db.Column(db.String(255), nullable=True)
     primary_character_name = db.Column(db.String(100), nullable=True, index=True)
+    metadata_json = db.Column(db.JSON, nullable=True)
     
     # Add relationships if items are directly part of builds (e.g., equipped weapons)
     # If items are directly equipped in builds, you'd need an association table or a ForeignKey in UserBuildCOE33
