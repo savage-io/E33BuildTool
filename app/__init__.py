@@ -21,10 +21,12 @@ def create_app(config_class=Config):
 
     from app.seed import seed_maelle_character_command
     from app.seed import seed_weapons_command
+    from app.seed import seed_maelle_skills_command
 
     # Register your CLI commands
     app.cli.add_command(seed_maelle_character_command)
     app.cli.add_command(seed_weapons_command)
+    app.cli.add_command(seed_maelle_skills_command)
 
     @app.route('/hello')
     def hello():

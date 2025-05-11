@@ -11,6 +11,7 @@ from app.game_data_definitions.maelle_weapons import MAELLE_WEAPON_DEFINITIONS
 class DataManagementTool(QMainWindow):
     def __init__(self):
         super().__init__()
+        print("Initializing Data Management Tool...")
         self.setWindowTitle("Data Management Tool")
         self.setGeometry(100, 100, 800, 600)
 
@@ -18,12 +19,62 @@ class DataManagementTool(QMainWindow):
         self.tabs = QTabWidget()
         self.setCentralWidget(self.tabs)
 
+        # Add user preference for maximum act completed
+        self.user_max_act = 99  # Default to 'Show All Content'
+        self.add_user_preferences_tab()
+
         # Add character-specific tabs
+        print("Adding character-specific tabs...")
+        self.add_character_tabs()
+        print("Character-specific tabs added.")
+
+        print("Adding picto tab...")
+        self.add_picto_tab()
+        print("Picto tab added.")
+
+    def add_user_preferences_tab(self):
+        """Add a tab for user preferences to set maximum act completed."""
+        preferences_tab = QWidget()
+        layout = QVBoxLayout()
+
+        layout.addWidget(QLabel("User Preferences"))
+
+        # Dropdown for selecting maximum act completed
+        self.act_dropdown = QComboBox()
+        self.act_dropdown.addItem("Show All Content")
+        self.act_dropdown.addItem("Act 1 Content Only")
+        self.act_dropdown.addItem("Show Act 2 Content")
+        self.act_dropdown.currentIndexChanged.connect(self.update_user_max_act)
+        layout.addWidget(self.act_dropdown)
+
+        preferences_tab.setLayout(layout)
+        self.tabs.addTab(preferences_tab, "Preferences")
+
+    def update_user_max_act(self):
+        """Update the user_max_act based on dropdown selection."""
+        selected_index = self.act_dropdown.currentIndex()
+        if selected_index == 0:
+            self.user_max_act = 99  # Show All Content
+        elif selected_index == 1:
+            self.user_max_act = 1  # Act 1 Content Only
+        elif selected_index == 2:
+            self.user_max_act = 2  # Show Act 2 Content
+
+        # Refresh character tabs to apply the new filter
+        self.refresh_character_tabs()
+
+    def refresh_character_tabs(self):
+        """Refresh character tabs to apply filtering based on user_max_act."""
+        self.tabs.clear()
+        self.add_user_preferences_tab()
         self.add_character_tabs()
         self.add_picto_tab()
 
     def add_character_tabs(self):
+        print("Loading CHARACTER_DEFINITIONS...")
         for character in CHARACTER_DEFINITIONS:
+            print(f"Loaded character: {character['name']}")
+            print(f"Skills: {character.get('skills', 'No skills found')}")
             character_tab = QWidget()
             character_layout = QVBoxLayout()
 
@@ -37,8 +88,10 @@ class DataManagementTool(QMainWindow):
             weapons_layout = QVBoxLayout()
 
             if character['name'] == "Maelle":
+                print("Adding weapons for Maelle...")
                 weapons_layout.addWidget(QLabel("Existing Weapons:"))
                 for weapon in MAELLE_WEAPON_DEFINITIONS:
+                    print(f"Weapon: {weapon['name']}")
                     weapon_dropdown = QComboBox()
                     weapon_dropdown.addItem(f"{weapon['name']}")
                     if 'power_by_level' in weapon:
@@ -71,10 +124,14 @@ class DataManagementTool(QMainWindow):
             skills_layout = QVBoxLayout()
 
             skills_layout.addWidget(QLabel("Existing Skills:"))
-            for skill in character.get('skills', []):
+            allowed_skills = self.filter_skills(character.get('skills', []))
+            for skill in allowed_skills:
+                print(f"Skill: {skill['name']}")
                 skill_dropdown = QComboBox()
-                skill_dropdown.addItem(f"{skill['name']}")
+                skill_dropdown.addItem(f"Name: {skill['name']}")
                 skill_dropdown.addItem(f"Description: {skill['description']}")
+                skill_dropdown.addItem(f"AP Cost: {skill['ap_cost']}")
+                skill_dropdown.addItem(f"Tags: {', '.join(skill['tags_json'])}")
                 skills_layout.addWidget(skill_dropdown)
 
             skills_tab.setLayout(skills_layout)
@@ -84,7 +141,31 @@ class DataManagementTool(QMainWindow):
             character_tab.setLayout(character_layout)
             self.tabs.addTab(character_tab, character['name'])
 
+    def filter_skills(self, skills):
+        """Filter skills based on user_max_act."""
+        allowed_skills = []
+        for skill in skills:
+            spoiler_info = skill.get('spoiler_info_json')
+            if spoiler_info is None:
+                allowed_skills.append(skill)
+                continue
+
+            act_available = spoiler_info.get("act_available")
+            if act_available is None:
+                allowed_skills.append(skill)
+                continue
+
+            try:
+                if int(act_available) <= self.user_max_act:
+                    allowed_skills.append(skill)
+            except ValueError:
+                print(f"Warning: Non-integer act_available for skill {skill['name']}: {act_available}")
+                allowed_skills.append(skill)
+
+        return allowed_skills
+
     def add_picto_tab(self):
+        print("Adding Pictos tab...")
         picto_tab = QWidget()
         layout = QVBoxLayout()
 

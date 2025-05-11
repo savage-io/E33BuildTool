@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, Response, json
 from . import db
-from .models import GameCharacterCOE33, SkillCOE33, PictoCOE33, LuminaCOE33  # Ensure SkillCOE33 is imported
+from .models import GameCharacterCOE33, SkillCOE33, PictoCOE33, LuminaCOE33, Weapon  # Ensure SkillCOE33 is imported
+from sqlalchemy import or_  # Import or_ for query filtering
 
 # Create a Blueprint for organizing API routes
 bp = Blueprint('main', __name__, url_prefix='/api/coe33')
@@ -145,6 +146,35 @@ def delete_skill(skill_id):
     db.session.commit()
     return jsonify({'message': f'Skill {skill.name} deleted successfully'}), 200
 
+@bp.route('/skills', methods=['GET'])
+def get_skills():
+    """Fetch skills filtered by user_max_act."""
+    user_max_act = request.args.get('user_max_act', default=99, type=int)
+
+    # Query for skills
+    skills_query = SkillCOE33.query.filter(
+        or_(
+            SkillCOE33.spoiler_info_json == None,
+            SkillCOE33.spoiler_info_json["act_available"].astext.cast(db.Integer) <= user_max_act
+        )
+    )
+
+    skills = skills_query.all()
+
+    # Serialize skills for response
+    skills_data = [
+        {
+            "name": skill.name,
+            "description": skill.description,
+            "ap_cost": skill.ap_cost,
+            "tags": skill.tags_json,
+            "spoiler_info": skill.spoiler_info_json
+        }
+        for skill in skills
+    ]
+
+    return jsonify(skills_data)
+
 # --- PictoCOE33 CRUD Endpoints ---
 
 @bp.route('/pictos', methods=['POST'])
@@ -216,6 +246,38 @@ def delete_picto(picto_id):
     db.session.commit()
     return jsonify({'message': f'Picto {picto.name} deleted successfully'}), 200
 
+@bp.route('/pictos', methods=['GET'])
+def get_filtered_pictos():
+    """Fetch pictos filtered by user_max_act."""
+    user_max_act = request.args.get('user_max_act', default=99, type=int)
+
+    # Query for pictos
+    pictos_query = PictoCOE33.query.filter(
+        or_(
+            PictoCOE33.spoiler_info_json == None,
+            PictoCOE33.spoiler_info_json["act_available"].astext.cast(db.Integer) <= user_max_act
+        )
+    )
+
+    pictos = pictos_query.all()
+
+    # Serialize pictos for response
+    pictos_data = [
+        {
+            "id": picto.id,
+            "name": picto.name,
+            "description": picto.description,
+            "stat_bonuses_json": picto.stat_bonuses_json,
+            "associated_lumina_id": picto.associated_lumina_id,
+            "how_to_acquire": picto.how_to_acquire,
+            "icon_url": picto.icon_url,
+            "spoiler_info": picto.spoiler_info_json
+        }
+        for picto in pictos
+    ]
+
+    return jsonify(pictos_data)
+
 # --- LuminaCOE33 CRUD Endpoints ---
 
 @bp.route('/luminas', methods=['POST'])
@@ -283,17 +345,81 @@ def delete_lumina(lumina_id):
     db.session.commit()
     return jsonify({'message': f'Lumina {lumina.name} deleted successfully'}), 200
 
+@bp.route('/luminas', methods=['GET'])
+def get_filtered_luminas():
+    """Fetch luminas filtered by user_max_act."""
+    user_max_act = request.args.get('user_max_act', default=99, type=int)
+
+    # Query for luminas
+    luminas_query = LuminaCOE33.query.filter(
+        or_(
+            LuminaCOE33.spoiler_info_json == None,
+            LuminaCOE33.spoiler_info_json["act_available"].astext.cast(db.Integer) <= user_max_act
+        )
+    )
+
+    luminas = luminas_query.all()
+
+    # Serialize luminas for response
+    luminas_data = [
+        {
+            "id": lumina.id,
+            "name": lumina.name,
+            "description": lumina.description,
+            "lumina_point_cost": lumina.lumina_point_cost,
+            "effect_details_json": lumina.effect_details_json,
+            "icon_url": lumina.icon_url,
+            "spoiler_info": lumina.spoiler_info_json
+        }
+        for lumina in luminas
+    ]
+
+    return jsonify(luminas_data)
+
 @bp.route('/weapons', methods=['GET'])
 def get_weapons():
     """Fetch all weapons data."""
-    from .models import Item
 
-    weapons = Item.query.all()
+    weapons = Weapon.query.all()
     weapons_data = [
         {
             "id": weapon.id,
             "name": weapon.name,
-            "item_type": weapon.item_type,
+            "weapons_type": weapon.weapons_type,
+            "element": weapon.element,
+            "power_by_level_json": weapon.power_by_level_json,
+            "attribute_scaling_tiers_json": weapon.attribute_scaling_tiers_json,
+            "passive_effects_by_level_json": weapon.passive_effects_by_level_json,
+            "acquisition_info": weapon.acquisition_info,
+            "icon_url": weapon.icon_url,
+            "primary_character_name": weapon.primary_character_name,
+            "metadata_json": weapon.metadata_json
+        }
+        for weapon in weapons
+    ]
+    return Response(json.dumps(weapons_data, sort_keys=False), mimetype='application/json')
+
+@bp.route('/weapons', methods=['GET'])
+def get_filtered_weapons():
+    """Fetch weapons filtered by user_max_act."""
+    user_max_act = request.args.get('user_max_act', default=99, type=int)
+
+    # Query for weapons
+    weapons_query = Weapon.query.filter(
+        or_(
+            Weapon.spoiler_info_json == None,
+            Weapon.spoiler_info_json["act_available"].astext.cast(db.Integer) <= user_max_act
+        )
+    )
+
+    weapons = weapons_query.all()
+
+    # Serialize weapons for response
+    weapons_data = [
+        {
+            "id": weapon.id,
+            "name": weapon.name,
+            "weapons_type": weapon.weapons_type,
             "element": weapon.element,
             "power_by_level_json": weapon.power_by_level_json,
             "attribute_scaling_tiers_json": weapon.attribute_scaling_tiers_json,
@@ -302,7 +428,39 @@ def get_weapons():
             "icon_url": weapon.icon_url,
             "primary_character_name": weapon.primary_character_name,
             "metadata_json": weapon.metadata_json,
+            "spoiler_info": weapon.spoiler_info_json
         }
         for weapon in weapons
     ]
-    return Response(json.dumps(weapons_data, sort_keys=False), mimetype='application/json')
+
+    return jsonify(weapons_data)
+
+@bp.route('/characters', methods=['GET'])
+def get_filtered_characters():
+    """Fetch characters filtered by user_max_act."""
+    user_max_act = request.args.get('user_max_act', default=99, type=int)
+
+    # Query for characters
+    characters_query = GameCharacterCOE33.query.filter(
+        or_(
+            GameCharacterCOE33.spoiler_info_json == None,
+            GameCharacterCOE33.spoiler_info_json["act_available"].astext.cast(db.Integer) <= user_max_act
+        )
+    )
+
+    characters = characters_query.all()
+
+    # Serialize characters for response
+    characters_data = [
+        {
+            "name": character.name,
+            "description": character.description,
+            "base_stats_json": character.base_stats_json,
+            "unique_mechanic_description": character.unique_mechanic_description,
+            "icon_url": character.icon_url,
+            "spoiler_info": character.spoiler_info_json
+        }
+        for character in characters
+    ]
+
+    return jsonify(characters_data)

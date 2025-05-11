@@ -3,8 +3,10 @@ from flask.cli import with_appcontext
 from . import db
 from .models import GameCharacterCOE33
 from .game_data_definitions.characters import MAELLE_CHARACTER_DATA
-from .models import Item
+from .models import Weapon
 from .game_data_definitions.maelle_weapons import MAELLE_WEAPON_DEFINITIONS
+from .game_data_definitions.maelle_skills import MAELLE_SKILL_DEFINITIONS
+from .models import SkillCOE33
 
 @click.command(name='seed_maelle_character')
 @with_appcontext
@@ -15,7 +17,7 @@ def seed_maelle_character_command():
 
     # Check if Maelle already exists
     existing_maelle = GameCharacterCOE33.query.filter_by(name=MAELLE_CHARACTER_DATA["name"]).first()
-    if existing_maelle:
+    if (existing_maelle):
         click.echo(f"Character '{MAELLE_CHARACTER_DATA['name']}' already exists. Skipping creation.")
         return
 
@@ -65,40 +67,43 @@ def seed_weapons_command():
                 click.echo(f"Warning: Weapon data found without a name for {character_name}. Skipping: {weapon_data}")
                 continue
 
-            existing_weapon = Item.query.filter_by(name=weapon_name).first()
+            existing_weapon = Weapon.query.filter_by(name=weapon_name).first()
 
             metadata = {
                 "stance_synergy": weapon_data.get("stance_synergy", []),
                 "element_interactions": weapon_data.get("element_interactions", {}),
                 "max_level": weapon_data.get("max_level"),
                 "power_at_max_level": weapon_data.get("power at max level"),
-                "attributes_list": weapon_data.get("attributes")
+                "attributes_list": weapon_data.get("attributes"),
+                "passives_data": weapon_data.get("passive_effects")
             }
 
             if existing_weapon:
                 click.echo(f"Weapon '{weapon_name}' already exists. Updating...")
-                existing_weapon.item_type = weapon_data.get("item_type", "Unknown")
+                existing_weapon.weapons_type = weapon_data.get("weapons_type", "Unknown")
                 existing_weapon.element = weapon_data.get("element")
                 existing_weapon.power_by_level_json = weapon_data.get("power_by_level")
                 existing_weapon.attribute_scaling_tiers_json = weapon_data.get("attribute_scaling_tiers")
-                existing_weapon.passive_effects_by_level_json = weapon_data.get("passive_effects_by_level")
+                existing_weapon.passive_effects_by_level_json = weapon_data.get("passive_effects")
                 existing_weapon.acquisition_info = weapon_data.get("acquisition_info")
                 existing_weapon.icon_url = weapon_data.get("icon_url")
                 existing_weapon.primary_character_name = character_name
                 existing_weapon.metadata_json = metadata
+                existing_weapon.spoiler_info_json = weapon_data.get("spoiler_info_json")
             else:
                 click.echo(f"Creating weapon '{weapon_name}'...")
-                new_weapon = Item(
+                new_weapon = Weapon(
                     name=weapon_name,
-                    item_type=weapon_data.get("item_type", "Unknown"),
+                    weapons_type=weapon_data.get("weapons_type", "Unknown"),
                     element=weapon_data.get("element"),
                     power_by_level_json=weapon_data.get("power_by_level"),
                     attribute_scaling_tiers_json=weapon_data.get("attribute_scaling_tiers"),
-                    passive_effects_by_level_json=weapon_data.get("passive_effects_by_level"),
+                    passive_effects_by_level_json=weapon_data.get("passive_effects"),
                     acquisition_info=weapon_data.get("acquisition_info"),
                     icon_url=weapon_data.get("icon_url"),
                     primary_character_name=character_name,
-                    metadata_json=metadata
+                    metadata_json=metadata,
+                    spoiler_info_json=weapon_data.get("spoiler_info_json")
                 )
                 db.session.add(new_weapon)
 
@@ -108,3 +113,50 @@ def seed_weapons_command():
     except Exception as e:
         db.session.rollback()
         click.echo(f"Error committing weapons to database: {e}")
+
+@click.command(name='seed_maelle_skills')
+@with_appcontext
+def seed_maelle_skills_command():
+    """Seeds Maelle's skill data."""
+
+    click.echo("Attempting to seed Maelle's skill data...")
+
+    for skill_data in MAELLE_SKILL_DEFINITIONS:
+        skill_name = skill_data.get("name")
+        if not skill_name:
+            click.echo("Warning: Skill data found without a name. Skipping.")
+            continue
+
+        existing_skill = SkillCOE33.query.filter_by(name=skill_name).first()
+
+        if existing_skill:
+            click.echo(f"Skill '{skill_name}' already exists. Updating...")
+            existing_skill.description = skill_data.get("description")
+            existing_skill.ap_cost = skill_data.get("ap_cost")
+            existing_skill.effects_json = skill_data.get("effects_json")
+            existing_skill.icon_url = skill_data.get("icon_url")
+            existing_skill.character_name = skill_data.get("character_name")
+            existing_skill.mechanics_json = skill_data.get("mechanics_json")
+            existing_skill.tags_json = skill_data.get("tags_json")
+            existing_skill.spoiler_info_json = skill_data.get("spoiler_info_json")
+        else:
+            click.echo(f"Creating skill '{skill_name}'...")
+            new_skill = SkillCOE33(
+                name=skill_name,
+                description=skill_data.get("description"),
+                ap_cost=skill_data.get("ap_cost"),
+                effects_json=skill_data.get("effects_json"),
+                icon_url=skill_data.get("icon_url"),
+                character_name=skill_data.get("character_name"),
+                mechanics_json=skill_data.get("mechanics_json"),
+                tags_json=skill_data.get("tags_json"),
+                spoiler_info_json=skill_data.get("spoiler_info_json")
+            )
+            db.session.add(new_skill)
+
+    try:
+        db.session.commit()
+        click.echo("Successfully committed skill updates/creations to database.")
+    except Exception as e:
+        db.session.rollback()
+        click.echo(f"Error committing skills to database: {e}")
