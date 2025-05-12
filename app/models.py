@@ -8,16 +8,19 @@ build_skills_association = db.Table(
     db.Column('skill_id', db.Integer, db.ForeignKey('skills_coe33.id'), primary_key=True)
 )
 
-build_pictos_association = db.Table(
-    'build_pictos_association_coe33',
+# Update build_equipped_picto_variants to reference the correct table name 'passive_abilities'
+build_equipped_picto_variants = db.Table(
+    'build_equipped_picto_variants',
     db.Column('user_build_id', db.Integer, db.ForeignKey('user_builds_coe33.id'), primary_key=True),
-    db.Column('picto_id', db.Integer, db.ForeignKey('pictos_coe33.id'), primary_key=True)
+    db.Column('picto_id', db.Integer, db.ForeignKey('passive_abilities.id'), primary_key=True),
+    db.Column('picto_variant_key_string', db.String(255), nullable=False)
 )
 
+# Update build_luminas_association to reference the correct table name 'passive_abilities'
 build_luminas_association = db.Table(
-    'build_luminas_association_coe33',
+    'build_luminas_association',
     db.Column('user_build_id', db.Integer, db.ForeignKey('user_builds_coe33.id'), primary_key=True),
-    db.Column('lumina_id', db.Integer, db.ForeignKey('luminas_coe33.id'), primary_key=True)
+    db.Column('picto_id', db.Integer, db.ForeignKey('passive_abilities.id'), primary_key=True)
 )
 
 # --- Core Models ---
@@ -64,50 +67,25 @@ class SkillCOE33(db.Model):
     builds = db.relationship("UserBuildCOE33", secondary=build_skills_association, back_populates="selected_skills")
 
 
-class PictoCOE33(db.Model):
-    __tablename__ = 'pictos_coe33'
-    id = db.Column(db.Integer, primary_key=True, index=True)
+# Removed PictoCOE33 and LuminaCOE33 classes
 
-    name = db.Column(db.String(150), nullable=False, index=True)  # Base name, e.g., "Greater Defenceless"
+class PictoLumina(db.Model):
+    __tablename__ = 'passive_abilities'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), unique=True, nullable=False, index=True)  # e.g., "Accelerating Heal"
 
-    # This field distinguishes different versions of the same named Picto
-    # Using an integer for simplicity to represent tiers.
-    tier = db.Column(db.Integer, nullable=False, default=1)
+    # Lumina-related properties
+    lumina_description = db.Column(db.Text, nullable=False)  # The core passive effect text
+    lumina_lp_cost = db.Column(db.Integer, nullable=False)
+    lumina_type = db.Column(db.String(50), nullable=True)  # Offensive, Defensive, Support
+    lumina_effect_details_json = db.Column(db.JSON, nullable=True)  # Structured passive effect
 
-    description = db.Column(db.Text, nullable=True)  # General description of the Picto (might be same for all tiers)
+    # Picto-related properties
+    picto_variants_json = db.Column(db.JSON, nullable=True)  # Stores: {"level_X": {"stat_bonuses": {...}, "acquisition": "...", "icon": "..."}, ...}
 
-    # Stat bonuses specific to THIS TIER of the Picto
-    stat_bonuses_json = db.Column(db.JSON, nullable=True)
-
-    # Foreign Key to the Lumina that this Picto (regardless of its tier) grants.
-    # All tiers of "Greater Defenceless" Picto would point to the SAME "Greater Defenceless" Lumina record.
-    associated_lumina_id = db.Column(db.Integer, db.ForeignKey('luminas_coe33.id'), nullable=False)
-
-    how_to_acquire = db.Column(db.Text, nullable=True)  # Acquisition might be tier-specific
-    icon_url = db.Column(db.String(255), nullable=True)  # Icon might be tier-specific or same
-
+    # Common fields
     tags_json = db.Column(db.JSON, nullable=True)
-    spoiler_info_json = db.Column(db.JSON, nullable=True)  # Spoiler info might be tier-specific
-
-    # Relationship to its Lumina
-    lumina = db.relationship("LuminaCOE33", backref="picto_sources")  # Backref can be 'picto_sources' as one Lumina can be from multiple Picto tiers
-
-    # Ensure that the combination of name and tier is unique
-    __table_args__ = (db.UniqueConstraint('name', 'tier', name='_picto_name_tier_uc'),)
-
-
-class LuminaCOE33(db.Model):
-    __tablename__ = 'luminas_coe33'
-    id = db.Column(db.Integer, primary_key=True, index=True)
-    name = db.Column(db.String(150), unique=True, nullable=False, index=True)  # e.g., "Greater Defenceless" (the Lumina effect name)
-    description = db.Column(db.Text, nullable=False)  # e.g., "Plus 15% to Defenceless damage amplification"
-    lumina_point_cost = db.Column(db.Integer, nullable=False, default=1)  # e.g., 15 (from your example)
-    effect_details_json = db.Column(db.JSON, nullable=True)  # e.g., {"type": "enhance_debuff", "debuff_name": "Defenceless", "effect": "damage_amplification_boost_percent", "value": 15}
-    tags_json = db.Column(db.JSON, nullable=True)
-    type = db.Column(db.String(50), nullable=True)  # "Offensive", "Defensive", "Support" (from your example)
     spoiler_info_json = db.Column(db.JSON, nullable=True)
-
-    builds = db.relationship("UserBuildCOE33", secondary=build_luminas_association, back_populates="assigned_luminas")
 
 
 class UserBuildCOE33(db.Model):
@@ -128,8 +106,10 @@ class UserBuildCOE33(db.Model):
     character = db.relationship("GameCharacterCOE33", back_populates="builds")
 
     selected_skills = db.relationship("SkillCOE33", secondary=build_skills_association, back_populates="builds")
-    equipped_pictos = db.relationship("PictoCOE33", secondary=build_pictos_association, back_populates="builds")
-    assigned_luminas = db.relationship("LuminaCOE33", secondary=build_luminas_association, back_populates="builds")
+
+    # Updated relationships
+    equipped_pictos = db.Column(db.JSON, nullable=True)  # Stores ability_module_id and picto_variant_key
+    assigned_luminas = db.Column(db.JSON, nullable=True)  # Links directly to AbilityModule.id
 
 
 class Comment(db.Model):

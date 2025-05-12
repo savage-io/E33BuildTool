@@ -160,3 +160,51 @@ def seed_maelle_skills_command():
     except Exception as e:
         db.session.rollback()
         click.echo(f"Error committing skills to database: {e}")
+
+@click.command(name='seed_pictos_luminas')
+@with_appcontext
+def seed_pictos_luminas_command():
+    """Seeds Picto Lumina data into a single table."""
+
+    from .game_data_definitions.picto_lumina import PICTOS_LUMINAS_DEFINITIONS
+    from .models import PictoLumina
+
+    click.echo("Seeding Picto Lumina data...")
+
+    for lumina_data in PICTOS_LUMINAS_DEFINITIONS:
+        lumina_name = lumina_data.get("name")
+        if not lumina_name:
+            click.echo("Warning: Lumina data found without a name. Skipping.")
+            continue
+
+        existing_lumina = PictoLumina.query.filter_by(name=lumina_name).first()
+
+        if existing_lumina:
+            click.echo(f"Lumina '{lumina_name}' already exists. Updating...")
+            existing_lumina.description = lumina_data.get("lumina_description")
+            existing_lumina.lp_cost = lumina_data.get("lumina_lp_cost")
+            existing_lumina.lumina_type = lumina_data.get("lumina_type")
+            existing_lumina.effect_details_json = lumina_data.get("lumina_effect_details_json")
+            existing_lumina.picto_variants_json = lumina_data.get("picto_variants_json")
+            existing_lumina.tags_json = lumina_data.get("tags_json")
+            existing_lumina.spoiler_info_json = lumina_data.get("spoiler_info_json")
+        else:
+            click.echo(f"Creating Lumina '{lumina_name}'...")
+            new_lumina = PictoLumina(
+                name=lumina_name,
+                description=lumina_data.get("lumina_description"),
+                lp_cost=lumina_data.get("lumina_lp_cost"),
+                lumina_type=lumina_data.get("lumina_type"),
+                effect_details_json=lumina_data.get("lumina_effect_details_json"),
+                picto_variants_json=lumina_data.get("picto_variants_json"),
+                tags_json=lumina_data.get("tags_json"),
+                spoiler_info_json=lumina_data.get("spoiler_info_json")
+            )
+            db.session.add(new_lumina)
+
+    try:
+        db.session.commit()
+        click.echo("Successfully committed Picto Lumina updates/creations to database.")
+    except Exception as e:
+        db.session.rollback()
+        click.echo(f"Error committing Picto Lumina data to database: {e}")

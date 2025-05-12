@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, GameCharacterCOE33, SkillCOE33, PictoCOE33, LuminaCOE33, UserBuildCOE33
+from app.models import User, GameCharacterCOE33, SkillCOE33, PictoLumina, UserBuildCOE33  # Updated imports
 
 app = create_app()
 

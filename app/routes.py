@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, Response, json
 from . import db
-from .models import GameCharacterCOE33, SkillCOE33, PictoCOE33, LuminaCOE33, Weapon  # Ensure SkillCOE33 is imported
+from .models import GameCharacterCOE33, SkillCOE33, PictoLumina, Weapon  # Updated import
 from sqlalchemy import or_  # Import or_ for query filtering
 
 # Create a Blueprint for organizing API routes
@@ -175,21 +175,23 @@ def get_skills():
 
     return jsonify(skills_data)
 
-# --- PictoCOE33 CRUD Endpoints ---
+# --- PictoLumina CRUD Endpoints ---
 
 @bp.route('/pictos', methods=['POST'])
 def create_picto():
     data = request.get_json()
-    if not data or not data.get('name') or not data.get('description'):
-        return jsonify({'error': 'Picto name and description are required'}), 400
+    if not data or not data.get('name') or not data.get('lumina_description'):
+        return jsonify({'error': 'Picto name and lumina description are required'}), 400
 
-    new_picto = PictoCOE33(
+    new_picto = PictoLumina(
         name=data['name'],
-        description=data['description'],
-        stat_bonuses_json=data.get('stat_bonuses_json'),
-        associated_lumina_id=data.get('associated_lumina_id'),
-        how_to_acquire=data.get('how_to_acquire'),
-        icon_url=data.get('icon_url')
+        lumina_description=data['lumina_description'],
+        lumina_lp_cost=data.get('lumina_lp_cost'),
+        lumina_type=data.get('lumina_type'),
+        lumina_effect_details_json=data.get('lumina_effect_details_json'),
+        picto_variants_json=data.get('picto_variants_json'),
+        tags_json=data.get('tags_json'),
+        spoiler_info_json=data.get('spoiler_info_json')
     )
     db.session.add(new_picto)
     db.session.commit()
@@ -197,51 +199,57 @@ def create_picto():
 
 @bp.route('/pictos', methods=['GET'])
 def get_all_pictos():
-    pictos = PictoCOE33.query.all()
+    pictos = PictoLumina.query.all()
     picto_list = []
     for picto in pictos:
         picto_list.append({
             'id': picto.id,
             'name': picto.name,
-            'description': picto.description,
-            'stat_bonuses_json': picto.stat_bonuses_json,
-            'associated_lumina_id': picto.associated_lumina_id,
-            'how_to_acquire': picto.how_to_acquire,
-            'icon_url': picto.icon_url
+            'lumina_description': picto.lumina_description,
+            'lumina_lp_cost': picto.lumina_lp_cost,
+            'lumina_type': picto.lumina_type,
+            'lumina_effect_details_json': picto.lumina_effect_details_json,
+            'picto_variants_json': picto.picto_variants_json,
+            'tags_json': picto.tags_json,
+            'spoiler_info_json': picto.spoiler_info_json
         })
     return jsonify(picto_list), 200
 
 @bp.route('/pictos/<int:picto_id>', methods=['GET'])
 def get_picto(picto_id):
-    picto = PictoCOE33.query.get_or_404(picto_id)
+    picto = PictoLumina.query.get_or_404(picto_id)
     return jsonify({
         'id': picto.id,
         'name': picto.name,
-        'description': picto.description,
-        'stat_bonuses_json': picto.stat_bonuses_json,
-        'associated_lumina_id': picto.associated_lumina_id,
-        'how_to_acquire': picto.how_to_acquire,
-        'icon_url': picto.icon_url
+        'lumina_description': picto.lumina_description,
+        'lumina_lp_cost': picto.lumina_lp_cost,
+        'lumina_type': picto.lumina_type,
+        'lumina_effect_details_json': picto.lumina_effect_details_json,
+        'picto_variants_json': picto.picto_variants_json,
+        'tags_json': picto.tags_json,
+        'spoiler_info_json': picto.spoiler_info_json
     }), 200
 
 @bp.route('/pictos/<int:picto_id>', methods=['PUT'])
 def update_picto(picto_id):
-    picto = PictoCOE33.query.get_or_404(picto_id)
+    picto = PictoLumina.query.get_or_404(picto_id)
     data = request.get_json()
 
     picto.name = data.get('name', picto.name)
-    picto.description = data.get('description', picto.description)
-    picto.stat_bonuses_json = data.get('stat_bonuses_json', picto.stat_bonuses_json)
-    picto.associated_lumina_id = data.get('associated_lumina_id', picto.associated_lumina_id)
-    picto.how_to_acquire = data.get('how_to_acquire', picto.how_to_acquire)
-    picto.icon_url = data.get('icon_url', picto.icon_url)
+    picto.lumina_description = data.get('lumina_description', picto.lumina_description)
+    picto.lumina_lp_cost = data.get('lumina_lp_cost', picto.lumina_lp_cost)
+    picto.lumina_type = data.get('lumina_type', picto.lumina_type)
+    picto.lumina_effect_details_json = data.get('lumina_effect_details_json', picto.lumina_effect_details_json)
+    picto.picto_variants_json = data.get('picto_variants_json', picto.picto_variants_json)
+    picto.tags_json = data.get('tags_json', picto.tags_json)
+    picto.spoiler_info_json = data.get('spoiler_info_json', picto.spoiler_info_json)
 
     db.session.commit()
     return jsonify({'message': f'Picto {picto.name} updated successfully'}), 200
 
 @bp.route('/pictos/<int:picto_id>', methods=['DELETE'])
 def delete_picto(picto_id):
-    picto = PictoCOE33.query.get_or_404(picto_id)
+    picto = PictoLumina.query.get_or_404(picto_id)
     db.session.delete(picto)
     db.session.commit()
     return jsonify({'message': f'Picto {picto.name} deleted successfully'}), 200
@@ -252,10 +260,10 @@ def get_filtered_pictos():
     user_max_act = request.args.get('user_max_act', default=99, type=int)
 
     # Query for pictos
-    pictos_query = PictoCOE33.query.filter(
+    pictos_query = PictoLumina.query.filter(
         or_(
-            PictoCOE33.spoiler_info_json == None,
-            PictoCOE33.spoiler_info_json["act_available"].astext.cast(db.Integer) <= user_max_act
+            PictoLumina.spoiler_info_json == None,
+            PictoLumina.spoiler_info_json["act_available"].astext.cast(db.Integer) <= user_max_act
         )
     )
 
@@ -266,12 +274,13 @@ def get_filtered_pictos():
         {
             "id": picto.id,
             "name": picto.name,
-            "description": picto.description,
-            "stat_bonuses_json": picto.stat_bonuses_json,
-            "associated_lumina_id": picto.associated_lumina_id,
-            "how_to_acquire": picto.how_to_acquire,
-            "icon_url": picto.icon_url,
-            "spoiler_info": picto.spoiler_info_json
+            "lumina_description": picto.lumina_description,
+            "lumina_lp_cost": picto.lumina_lp_cost,
+            "lumina_type": picto.lumina_type,
+            "lumina_effect_details_json": picto.lumina_effect_details_json,
+            "picto_variants_json": picto.picto_variants_json,
+            "tags_json": picto.tags_json,
+            "spoiler_info_json": picto.spoiler_info_json
         }
         for picto in pictos
     ]
@@ -283,15 +292,17 @@ def get_filtered_pictos():
 @bp.route('/luminas', methods=['POST'])
 def create_lumina():
     data = request.get_json()
-    if not data or not data.get('name') or not data.get('description') or data.get('lumina_point_cost') is None:
-        return jsonify({'error': 'Lumina name, description, and lumina_point_cost are required'}), 400
+    if not data or not data.get('name') or not data.get('lumina_description'):
+        return jsonify({'error': 'Lumina name and description are required'}), 400
 
-    new_lumina = LuminaCOE33(
+    new_lumina = PictoLumina(
         name=data['name'],
-        description=data['description'],
-        lumina_point_cost=data['lumina_point_cost'],
-        effect_details_json=data.get('effect_details_json'),
-        icon_url=data.get('icon_url')
+        lumina_description=data['lumina_description'],
+        lumina_lp_cost=data.get('lumina_lp_cost'),
+        lumina_type=data.get('lumina_type'),
+        lumina_effect_details_json=data.get('lumina_effect_details_json'),
+        tags_json=data.get('tags_json'),
+        spoiler_info_json=data.get('spoiler_info_json')
     )
     db.session.add(new_lumina)
     db.session.commit()
@@ -299,48 +310,54 @@ def create_lumina():
 
 @bp.route('/luminas', methods=['GET'])
 def get_all_luminas():
-    luminas = LuminaCOE33.query.all()
+    luminas = PictoLumina.query.all()
     lumina_list = []
     for lumina in luminas:
         lumina_list.append({
             'id': lumina.id,
             'name': lumina.name,
-            'description': lumina.description,
-            'lumina_point_cost': lumina.lumina_point_cost,
-            'effect_details_json': lumina.effect_details_json,
-            'icon_url': lumina.icon_url
+            'lumina_description': lumina.lumina_description,
+            'lumina_lp_cost': lumina.lumina_lp_cost,
+            'lumina_type': lumina.lumina_type,
+            'lumina_effect_details_json': lumina.lumina_effect_details_json,
+            'tags_json': lumina.tags_json,
+            'spoiler_info_json': lumina.spoiler_info_json
         })
     return jsonify(lumina_list), 200
 
 @bp.route('/luminas/<int:lumina_id>', methods=['GET'])
 def get_lumina(lumina_id):
-    lumina = LuminaCOE33.query.get_or_404(lumina_id)
+    lumina = PictoLumina.query.get_or_404(lumina_id)
     return jsonify({
         'id': lumina.id,
         'name': lumina.name,
-        'description': lumina.description,
-        'lumina_point_cost': lumina.lumina_point_cost,
-        'effect_details_json': lumina.effect_details_json,
-        'icon_url': lumina.icon_url
+        'lumina_description': lumina.lumina_description,
+        'lumina_lp_cost': lumina.lumina_lp_cost,
+        'lumina_type': lumina.lumina_type,
+        'lumina_effect_details_json': lumina.lumina_effect_details_json,
+        'tags_json': lumina.tags_json,
+        'spoiler_info_json': lumina.spoiler_info_json
     }), 200
 
 @bp.route('/luminas/<int:lumina_id>', methods=['PUT'])
 def update_lumina(lumina_id):
-    lumina = LuminaCOE33.query.get_or_404(lumina_id)
+    lumina = PictoLumina.query.get_or_404(lumina_id)
     data = request.get_json()
 
     lumina.name = data.get('name', lumina.name)
-    lumina.description = data.get('description', lumina.description)
-    lumina.lumina_point_cost = data.get('lumina_point_cost', lumina.lumina_point_cost)
-    lumina.effect_details_json = data.get('effect_details_json', lumina.effect_details_json)
-    lumina.icon_url = data.get('icon_url', lumina.icon_url)
+    lumina.lumina_description = data.get('lumina_description', lumina.lumina_description)
+    lumina.lumina_lp_cost = data.get('lumina_lp_cost', lumina.lumina_lp_cost)
+    lumina.lumina_type = data.get('lumina_type', lumina.lumina_type)
+    lumina.lumina_effect_details_json = data.get('lumina_effect_details_json', lumina.lumina_effect_details_json)
+    lumina.tags_json = data.get('tags_json', lumina.tags_json)
+    lumina.spoiler_info_json = data.get('spoiler_info_json', lumina.spoiler_info_json)
 
     db.session.commit()
     return jsonify({'message': f'Lumina {lumina.name} updated successfully'}), 200
 
 @bp.route('/luminas/<int:lumina_id>', methods=['DELETE'])
 def delete_lumina(lumina_id):
-    lumina = LuminaCOE33.query.get_or_404(lumina_id)
+    lumina = PictoLumina.query.get_or_404(lumina_id)
     db.session.delete(lumina)
     db.session.commit()
     return jsonify({'message': f'Lumina {lumina.name} deleted successfully'}), 200
@@ -351,10 +368,10 @@ def get_filtered_luminas():
     user_max_act = request.args.get('user_max_act', default=99, type=int)
 
     # Query for luminas
-    luminas_query = LuminaCOE33.query.filter(
+    luminas_query = PictoLumina.query.filter(
         or_(
-            LuminaCOE33.spoiler_info_json == None,
-            LuminaCOE33.spoiler_info_json["act_available"].astext.cast(db.Integer) <= user_max_act
+            PictoLumina.spoiler_info_json == None,
+            PictoLumina.spoiler_info_json["act_available"].astext.cast(db.Integer) <= user_max_act
         )
     )
 
@@ -365,11 +382,12 @@ def get_filtered_luminas():
         {
             "id": lumina.id,
             "name": lumina.name,
-            "description": lumina.description,
-            "lumina_point_cost": lumina.lumina_point_cost,
-            "effect_details_json": lumina.effect_details_json,
-            "icon_url": lumina.icon_url,
-            "spoiler_info": lumina.spoiler_info_json
+            "lumina_description": lumina.lumina_description,
+            "lumina_lp_cost": lumina.lumina_lp_cost,
+            "lumina_type": lumina.lumina_type,
+            "lumina_effect_details_json": lumina.lumina_effect_details_json,
+            "tags_json": lumina.tags_json,
+            "spoiler_info_json": lumina.spoiler_info_json
         }
         for lumina in luminas
     ]
@@ -464,3 +482,30 @@ def get_filtered_characters():
     ]
 
     return jsonify(characters_data)
+
+@bp.route('/pictos_luminas', methods=['GET'])
+def get_pictos_luminas():
+    """Fetches Picto Lumina data, filterable by type."""
+    lumina_type = request.args.get('type')
+
+    query = PictoLumina.query
+    if lumina_type:
+        query = query.filter(PictoLumina.lumina_type == lumina_type)
+
+    results = query.all()
+    response_data = [
+        {
+            'id': item.id,
+            'name': item.name,
+            'lumina_description': item.lumina_description,
+            'lumina_lp_cost': item.lumina_lp_cost,
+            'lumina_type': item.lumina_type,
+            'lumina_effect_details_json': item.lumina_effect_details_json,
+            'picto_variants_json': item.picto_variants_json,
+            'tags_json': item.tags_json,
+            'spoiler_info_json': item.spoiler_info_json
+        }
+        for item in results
+    ]
+
+    return jsonify(response_data), 200

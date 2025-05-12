@@ -9,11 +9,15 @@ from alembic import context
 # access to the values within the .ini file in use.
 config = context.config
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-fileConfig(config.config_file_name)
-logger = logging.getLogger('alembic.env')
-
+# Check if the config file has a valid logging configuration before calling fileConfig
+if config.config_file_name:
+    try:
+        fileConfig(config.config_file_name)
+    except KeyError as e:
+        logger = logging.getLogger('alembic.env')
+        logger.warning(f"Logging configuration issue: {e}. Proceeding with default logging settings.")
+else:
+    logger = logging.getLogger('alembic.env')
 
 def get_engine():
     try:
