@@ -5,13 +5,13 @@ from sqlalchemy.sql import func
 # --- Association Tables for UserBuildCOE33 ---
 build_skills_association = db.Table(
     'build_skills_association', 
-    db.Column('user_build_id', db.Integer, db.ForeignKey('user_builds_coe33.id', ondelete='CASCADE'), primary_key=True),
-    db.Column('skill_id', db.Integer, db.ForeignKey('skills_coe33.id', ondelete='CASCADE'), primary_key=True)
+    db.Column('user_build_id', db.Integer, db.ForeignKey('user_builds.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('skill_id', db.Integer, db.ForeignKey('skills.id', ondelete='CASCADE'), primary_key=True)
 )
 
 build_assigned_luminas_association = db.Table(
     'build_assigned_pictoluminas', 
-    db.Column('user_build_id', db.Integer, db.ForeignKey('user_builds_coe33.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('user_build_id', db.Integer, db.ForeignKey('user_builds.id', ondelete='CASCADE'), primary_key=True),
     db.Column('pictolumina_id', db.Integer, db.ForeignKey('pictoluminas.id', ondelete='CASCADE'), primary_key=True)
 )
 
@@ -31,7 +31,7 @@ class User(db.Model):
     comments = db.relationship("Comment", back_populates="user", lazy='dynamic', cascade="all, delete-orphan")
 
 class GameCharacterCOE33(db.Model):
-    __tablename__ = 'game_characters_coe33'
+    __tablename__ = 'characters'
     name = db.Column(db.String(100), primary_key=True, unique=True, nullable=False, index=True)
     description = db.Column(db.Text, nullable=True)
     base_stats_json = db.Column(db.JSON, nullable=True) # For base Vit, Might, Agi, Def, Luck, HP, AP etc.
@@ -43,10 +43,10 @@ class GameCharacterCOE33(db.Model):
     # weapons = db.relationship("Weapon", back_populates="character_restriction", lazy='dynamic')
 
 class SkillCOE33(db.Model):
-    __tablename__ = 'skills_coe33'
+    __tablename__ = 'skills'
     id = db.Column(db.Integer, primary_key=True, index=True)
     name = db.Column(db.String(150), nullable=False, index=True, unique=True)
-    character_name = db.Column(db.String(100), db.ForeignKey('game_characters_coe33.name'), nullable=True, index=True) 
+    character_name = db.Column(db.String(100), db.ForeignKey('characters.name'), nullable=True, index=True) 
     ap_cost = db.Column(db.Integer, nullable=True)
     description = db.Column(db.Text, nullable=False)
     effects_json = db.Column(db.JSON, nullable=True)
@@ -72,7 +72,7 @@ class Weapon(db.Model): # Renamed from Item to Weapon
     acquisition_info = db.Column(db.Text, nullable=True)
     icon_url = db.Column(db.String(255), nullable=True)
     # Changed from primary_character_name to character_restriction_name for clarity, still FKs to GameCharacter
-    character_restriction_name = db.Column(db.String(100), db.ForeignKey('game_characters_coe33.name'), nullable=True, index=True)
+    character_restriction_name = db.Column(db.String(100), db.ForeignKey('characters.name'), nullable=True, index=True)
     metadata_json = db.Column(db.JSON, nullable=True) 
     spoiler_info_json = db.Column(db.JSON, nullable=True)
 
@@ -100,7 +100,7 @@ class PictoLumina(db.Model):
 
 class EquippedPictoInBuild(db.Model):
     __tablename__ = 'build_equipped_pictos'
-    user_build_id = db.Column(db.Integer, db.ForeignKey('user_builds_coe33.id', ondelete='CASCADE'), primary_key=True)
+    user_build_id = db.Column(db.Integer, db.ForeignKey('user_builds.id', ondelete='CASCADE'), primary_key=True)
     pictolumina_id = db.Column(db.Integer, db.ForeignKey('pictoluminas.id', ondelete='CASCADE'), primary_key=True)
     picto_variant_key = db.Column(db.String(50), primary_key=True)
 
@@ -125,10 +125,10 @@ class EquippedPictoInBuild(db.Model):
 
 
 class UserBuildCOE33(db.Model):
-    __tablename__ = 'user_builds_coe33'
+    __tablename__ = 'user_builds'
     id = db.Column(db.Integer, primary_key=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    character_name = db.Column(db.String(100), db.ForeignKey('game_characters_coe33.name', ondelete='CASCADE'), nullable=False)
+    character_name = db.Column(db.String(100), db.ForeignKey('characters.name', ondelete='CASCADE'), nullable=False)
     build_title = db.Column(db.String(200), nullable=False)
     build_description = db.Column(db.Text, nullable=True)
     
@@ -171,7 +171,7 @@ class UserBuildCOE33(db.Model):
 class Comment(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
-    build_id = db.Column(db.Integer, db.ForeignKey('user_builds_coe33.id', ondelete='CASCADE'), nullable=False)
+    build_id = db.Column(db.Integer, db.ForeignKey('user_builds.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     text = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())

@@ -4,9 +4,10 @@ import csv
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog, QComboBox
 )
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 from app.game_data_definitions.characters import CHARACTER_DEFINITIONS
 from app.game_data_definitions.maelle_weapons import MAELLE_WEAPON_DEFINITIONS
+from app.game_data_definitions.picto_lumina import PICTOS_LUMINAS_DEFINITIONS
 
 class DataManagementTool(QMainWindow):
     def __init__(self):
@@ -74,7 +75,6 @@ class DataManagementTool(QMainWindow):
         print("Loading CHARACTER_DEFINITIONS...")
         for character in CHARACTER_DEFINITIONS:
             print(f"Loaded character: {character['name']}")
-            print(f"Skills: {character.get('skills', 'No skills found')}")
             character_tab = QWidget()
             character_layout = QVBoxLayout()
 
@@ -89,32 +89,30 @@ class DataManagementTool(QMainWindow):
 
             if character['name'] == "Maelle":
                 print("Adding weapons for Maelle...")
-                weapons_layout.addWidget(QLabel("Existing Weapons:"))
+                weapons_dropdown = QComboBox()
+                weapon_details_label = QLabel("Select a weapon to see details.")
+                weapons_layout.addWidget(weapons_dropdown)
+                weapons_layout.addWidget(weapon_details_label)
+
                 for weapon in MAELLE_WEAPON_DEFINITIONS:
-                    print(f"Weapon: {weapon['name']}")
-                    weapon_dropdown = QComboBox()
-                    weapon_dropdown.addItem(f"{weapon['name']}")
-                    if 'power_by_level' in weapon:
-                        max_power = max(weapon['power_by_level'].values())
-                        weapon_dropdown.addItem(f"Max Power: {max_power}")
-                    else:
-                        weapon_dropdown.addItem("Power data not available")
+                    weapons_dropdown.addItem(weapon['name'])
 
-                    # Add additional attributes
-                    if 'element' in weapon:
-                        weapon_dropdown.addItem(f"Element: {weapon['element']}")
+                def update_weapon_details(index):
+                    if index >= 0:
+                        weapon = MAELLE_WEAPON_DEFINITIONS[index]
+                        details = f"Name: {weapon['name']}\n"
+                        if 'power_by_level' in weapon:
+                            max_power = max(weapon['power_by_level'].values())
+                            details += f"Max Power: {max_power}\n"
+                        if 'element' in weapon:
+                            details += f"Element: {weapon['element']}\n"
+                        if 'attribute_scaling' in weapon:
+                            details += "Attribute Scaling:\n"
+                            for attr, scaling in weapon['attribute_scaling'].items():
+                                details += f"  {attr}: {scaling}\n"
+                        weapon_details_label.setText(details)
 
-                    if 'power_by_level' in weapon:
-                        weapon_dropdown.addItem("Power by Level:")
-                        for level, power in weapon['power_by_level'].items():
-                            weapon_dropdown.addItem(f"  Level {level}: {power}")
-
-                    if 'attribute_scaling' in weapon:
-                        weapon_dropdown.addItem("Attribute Scaling:")
-                        for attr, scaling in weapon['attribute_scaling'].items():
-                            weapon_dropdown.addItem(f"  {attr}: {scaling}")
-
-                    weapons_layout.addWidget(weapon_dropdown)
+                weapons_dropdown.currentIndexChanged.connect(update_weapon_details)
 
             weapons_tab.setLayout(weapons_layout)
             sub_tabs.addTab(weapons_tab, "Weapons")
@@ -123,16 +121,22 @@ class DataManagementTool(QMainWindow):
             skills_tab = QWidget()
             skills_layout = QVBoxLayout()
 
-            skills_layout.addWidget(QLabel("Existing Skills:"))
+            skills_dropdown = QComboBox()
+            skill_details_label = QLabel("Select a skill to see details.")
+            skills_layout.addWidget(skills_dropdown)
+            skills_layout.addWidget(skill_details_label)
+
             allowed_skills = self.filter_skills(character.get('skills', []))
             for skill in allowed_skills:
-                print(f"Skill: {skill['name']}")
-                skill_dropdown = QComboBox()
-                skill_dropdown.addItem(f"Name: {skill['name']}")
-                skill_dropdown.addItem(f"Description: {skill['description']}")
-                skill_dropdown.addItem(f"AP Cost: {skill['ap_cost']}")
-                skill_dropdown.addItem(f"Tags: {', '.join(skill['tags_json'])}")
-                skills_layout.addWidget(skill_dropdown)
+                skills_dropdown.addItem(skill['name'])
+
+            def update_skill_details(index):
+                if index >= 0:
+                    skill = allowed_skills[index]
+                    details = f"Name: {skill['name']}\nDescription: {skill['description']}\nAP Cost: {skill['ap_cost']}\nTags: {', '.join(skill['tags_json'])}"
+                    skill_details_label.setText(details)
+
+            skills_dropdown.currentIndexChanged.connect(update_skill_details)
 
             skills_tab.setLayout(skills_layout)
             sub_tabs.addTab(skills_tab, "Skills")
@@ -171,10 +175,24 @@ class DataManagementTool(QMainWindow):
 
         layout.addWidget(QLabel("Pictos Data Management"))
 
-        # Placeholder dropdown for pictos data
         picto_dropdown = QComboBox()
-        picto_dropdown.addItem("No pictos data available.")
+        picto_details_label = QLabel("Select a Picto/Lumina to see details.")
         layout.addWidget(picto_dropdown)
+        layout.addWidget(picto_details_label)
+
+        if PICTOS_LUMINAS_DEFINITIONS:
+            for picto in PICTOS_LUMINAS_DEFINITIONS:
+                picto_dropdown.addItem(picto['name'])
+
+            def update_picto_details(index):
+                if index >= 0:
+                    picto = PICTOS_LUMINAS_DEFINITIONS[index]
+                    details = f"Name: {picto['name']}\nDescription: {picto['lumina_description']}\nLP Cost: {picto['lumina_lp_cost']}\nType: {picto['lumina_type']}\nTags: {', '.join(picto['tags_json'])}"
+                    picto_details_label.setText(details)
+
+            picto_dropdown.currentIndexChanged.connect(update_picto_details)
+        else:
+            picto_dropdown.addItem("No pictos data available.")
 
         picto_tab.setLayout(layout)
         self.tabs.addTab(picto_tab, "Pictos")
