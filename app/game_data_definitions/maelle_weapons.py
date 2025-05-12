@@ -6,7 +6,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Barrier Breaker",
         "element": "Void",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 2},
         "power at max level": 3616,
         "attributes": ["Defense", "Agility"],
@@ -34,7 +34,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Battlum",
         "element": "Physical",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3067,
         "attributes": ["Luck", "Defense"],
@@ -62,7 +62,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Brulerum",
         "element": "Fire",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 2744,
         "attributes": ["Luck", "Agility"],
@@ -90,7 +90,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Chalium",
         "element": "Light",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3422,
         "attributes": ["Vitality", "Agility"],
@@ -118,7 +118,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Chantenum",
         "element": "Fire",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 2841,
         "attributes": ["Luck", "Agility"],
@@ -146,7 +146,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Clierum",
         "element": "Lightning",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3196,
         "attributes": ["Defense", "Agility"],
@@ -174,7 +174,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Coldum",
         "element": "Ice",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 2583,
         "attributes": ["Vitality", "Defense"],
@@ -202,7 +202,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Duenum",
         "element": "Physical",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 2421,
         "attributes": ["Defense", "Agility"],
@@ -230,7 +230,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Facesum",
         "element": "Physical",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3519,
         "attributes": ["Luck", "Vitality"],
@@ -258,7 +258,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Glaisum",
         "element": "Physical",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3713,
         "attributes": ["Defense", "Agility"],
@@ -286,7 +286,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Jarum",
         "element": "Physical",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 2583,
         "attributes": ["Luck", "Defense"],
@@ -314,7 +314,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Lithum",
         "element": "Void",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3228,
         "attributes": ["Luck", "Agility"],
@@ -342,7 +342,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Medalum",
         "element": "Physical",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 2906,
         "attributes": ["Defense", "Agility"],
@@ -370,7 +370,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Melarum",
         "element": "Physical",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3584,
         "attributes": ["Luck", "Vitality"],
@@ -398,7 +398,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Plenum",
         "element": "Ice",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3035,
         "attributes": ["Luck", "Defense"],
@@ -426,7 +426,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Seashelum",
         "element": "Fire",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3003,
         "attributes": ["Agility", "Defense"],
@@ -454,7 +454,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Sekarum",
         "element": "Physical",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3390,
         "attributes": ["Vitality", "Agility"],
@@ -482,7 +482,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Stalum",
         "element": "Fire",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3228,
         "attributes": ["Luck", "Defense"],
@@ -510,7 +510,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Tissenum",
         "element": "Earth",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3874,
         "attributes": ["Vitality", "Agility"],
@@ -538,7 +538,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Veremum",
         "element": "Physical",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3293,
         "attributes": ["Luck", "Vitality"],
@@ -566,7 +566,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Volesterum",
         "element": "Physical",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3293,
         "attributes": ["Vitality", "Agility"],
@@ -594,7 +594,7 @@ MAELLE_WEAPON_DEFINITIONS = [
     {
         "name": "Yeverum",
         "element": "Physical",
-        "item_type": "Weapon_Rapier",
+        "weapon_type": "Weapon_Rapier",
         "spoiler_info_json": {"act_available": 1},
         "power at max level": 3358,
         "attributes": ["Defense", "Agility"],

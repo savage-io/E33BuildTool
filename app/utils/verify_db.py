@@ -39,15 +39,17 @@ def backup_tables():
     except SQLAlchemyError as e:
         print(f"An error occurred while backing up tables: {e}")
 
+# Removed references to luminas_coe33
+def drop_old_tables(connection):
+    connection.execute(text("DROP TABLE IF EXISTS pictos_coe33;"))
+    print("Dropped old table: pictos_coe33.")
+
 def update_database():
     try:
         app = create_app()
         with app.app_context():
             with db.engine.connect() as connection:
-                # Drop old tables
-                connection.execute(text("DROP TABLE IF EXISTS pictos_coe33;"))
-                connection.execute(text("DROP TABLE IF EXISTS luminas_coe33;"))
-                print("Dropped old tables: pictos_coe33, luminas_coe33.")
+                drop_old_tables(connection)
 
             # Create new table
             db.create_all()
